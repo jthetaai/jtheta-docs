@@ -1,1 +1,177 @@
-# OpenAPI spec goes here
+openapi: 3.0.3
+info:
+  title: JTheta API
+  version: 1.0.0
+  description: |
+    REST API for creating projects, uploading datasets, assigning annotations, and exporting data on the JTheta platform.
+
+servers:
+  - url: https://api.jtheta.ai
+
+paths:
+  /validate_key/:
+    get:
+      summary: Validate API key
+      responses:
+        '200':
+          description: Valid API key
+        '401':
+          description: Invalid or missing API key
+
+  /create_project/:
+    post:
+      summary: Create a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_title:
+                  type: string
+                project_category:
+                  type: string
+              required:
+                - project_title
+                - project_category
+      responses:
+        '201':
+          description: Project created
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  /create_dataset/:
+    post:
+      summary: Create a dataset and upload images
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                dataset_name:
+                  type: string
+                project_name:
+                  type: string
+                license:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - dataset_name
+                - project_name
+                - images
+      responses:
+        '201':
+          description: Dataset created and images uploaded
+
+  /upload_images_to_dataset/:
+    post:
+      summary: Upload more images to a dataset
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                dataset_id:
+                  type: integer
+                project_name:
+                  type: string
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+              required:
+                - dataset_id
+                - project_name
+                - images
+      responses:
+        '201':
+          description: Images uploaded successfully
+
+  /request_annotation/:
+    post:
+      summary: Assign annotators and reviewers to a dataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset_id:
+                  type: integer
+                project_name:
+                  type: string
+                assigned_annotator:
+                  type: string
+                assigned_reviewer:
+                  type: string
+                labels:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      label:
+                        type: string
+                      type:
+                        type: string
+      responses:
+        '200':
+          description: Annotations assigned
+
+  /get_annotation_status/{project_title}/:
+    get:
+      summary: Get annotation progress status
+      parameters:
+        - name: project_title
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Status info
+
+  /delete_project/:
+    post:
+      summary: Delete a project and its related data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_title:
+                  type: string
+      responses:
+        '200':
+          description: Project deleted successfully
+
+
+
+  /api/export/download:
+    get:
+      summary: Get dataset info & dataset download URL
+      parameters:
+        - name: key
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Dataset info & dataset download URL
+
+ 
